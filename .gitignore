@@ -1,0 +1,21 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Scraped / test files
+index.html
+
+# Alembic (optional, keep versions but not cache)
+migrations/__pycache__/

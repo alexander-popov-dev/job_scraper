@@ -1,0 +1,25 @@
+services:
+
+  migrate:
+    container_name: job-scraper-migrate
+    build:
+      context: .
+    command: alembic upgrade head
+    env_file: .env
+    restart: "no"
+
+  celery-worker:
+    container_name: job-scraper-worker
+    build:
+      context: .
+    command: celery -A celery_app.config worker --loglevel=info -Q main,scraping
+    env_file: .env
+    restart: always
+
+  celery-beat:
+    container_name: job-scraper-beat
+    build:
+      context: .
+    command: celery -A celery_app.config beat --loglevel=info
+    env_file: .env
+    restart: unless-stopped
