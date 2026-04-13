@@ -45,7 +45,7 @@ class Parser(BaseParser):
                     published_at=(
                         kyiv_to_utc(parse(published_raw))
                         if published_raw
-                        else datetime.now(tz=timezone.utc)
+                        else None
                     ),
                 ))
             except Exception as e:
