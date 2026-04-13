@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, DateTime, Text, Boolean, ForeignKey, Integer
+from sqlalchemy import Column, BigInteger, String, DateTime, Text, Boolean, ForeignKey, Integer, UniqueConstraint, Index, text
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -54,6 +54,11 @@ class Jobs(Base):
     """Stores deduplicated job listings collected across all sites."""
 
     __tablename__ = 'jobs'
+    __table_args__ = (
+        UniqueConstraint('url', 'published_at', name='uq_jobs_url_published_at'),
+        Index('uq_jobs_url_null_published_at', 'url', unique=True,
+              postgresql_where=text('published_at IS NULL')),
+    )
 
     id = Column(BigInteger, primary_key=True, unique=True)
     url = Column(Text, nullable=True)
@@ -62,6 +67,6 @@ class Jobs(Base):
     salary = Column(Text, nullable=True)
     city = Column(Text, nullable=True)
     company = Column(Text, nullable=True)
-    published_at = Column(DateTime(timezone=True))
+    published_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True))
     updated_at = Column(DateTime(timezone=True))

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy import create_engine, QueuePool
+from sqlalchemy import create_engine, QueuePool, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -42,14 +42,14 @@ class BaseRepository:
 
 
 class JobsRepository(BaseRepository, BaseJobsRepository):
-    """PostgreSQL repository for job listings."""
+    """PostgresSQL repository for job listings."""
 
     def save(self, jobs: list[JobDTO]) -> list[JobDTO]:
         """Insert new jobs, skip duplicates by URL, and return the inserted rows."""
         now = datetime.now(timezone.utc)
 
-        values = [
-            {
+        def to_values(dto: JobDTO) -> dict:
+            return {
                 'url': dto.url,
                 'title': dto.title,
                 'description': dto.description,
@@ -60,31 +60,48 @@ class JobsRepository(BaseRepository, BaseJobsRepository):
                 'created_at': now,
                 'updated_at': now,
             }
-            for dto in jobs
-        ]
+
+        with_date = [dto for dto in jobs if dto.published_at is not None]
+        without_date = [dto for dto in jobs if dto.published_at is None]
+
+        inserted_rows = []
 
         with self._get_session() as db:
-            stmt = (
-                insert(Jobs)
-                .values(values)
-                .on_conflict_do_nothing(index_elements=['url'])
-                .returning(Jobs)
-            )
-            result = db.execute(stmt)
+            if with_date:
+                stmt = (
+                    insert(Jobs)
+                    .values([to_values(dto) for dto in with_date])
+                    .on_conflict_do_nothing(index_elements=['url', 'published_at'])
+                    .returning(Jobs)
+                )
+                inserted_rows.extend(db.execute(stmt).scalars().all())
+
+            if without_date:
+                stmt = (
+                    insert(Jobs)
+                    .values([to_values(dto) for dto in without_date])
+                    .on_conflict_do_nothing(
+                        index_elements=['url'],
+                        index_where=text('published_at IS NULL'),
+                    )
+                    .returning(Jobs)
+                )
+                inserted_rows.extend(db.execute(stmt).scalars().all())
+
             db.commit()
 
-            return [
-                JobDTO(
-                    url=row.url,
-                    title=row.title,
-                    description=row.description,
-                    salary=row.salary,
-                    company=row.company,
-                    city=row.city,
-                    published_at=row.published_at,
-                )
-                for row in result.scalars().all()
-            ]
+        return [
+            JobDTO(
+                url=row.url,
+                title=row.title,
+                description=row.description,
+                salary=row.salary,
+                company=row.company,
+                city=row.city,
+                published_at=row.published_at,
+            )
+            for row in inserted_rows
+        ]
 
 
 class SitesRepository(BaseRepository, BaseSitesRepository):
