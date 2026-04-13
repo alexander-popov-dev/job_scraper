@@ -32,7 +32,7 @@ def run_scraping() -> None:
             logger.info(f'Dispatched scrape_site for {site.name}')
         except Exception as e:
             logger.error(f'Failed to dispatch scrape_site for {site.name}: {e}')
-            tg.send_report(message=escape_markdown(str(e)))
+            tg.send_message(message=escape_markdown(str(e)))
 
 
 @shared_task
@@ -61,7 +61,7 @@ def scrape_site(site_name: str) -> None:
         sessions_repo.complete(session_id=session_id, jobs_found=len(new_jobs))
 
         for job in new_jobs:
-            age = str(datetime.now(tz=timezone.utc) - job.published_at)
+            age = str(datetime.now(tz=timezone.utc) - job.published_at) if job.published_at else None
             message = (
                 f'*{escape_markdown(site.name)}*\n\n'
                 f'*{escape_markdown(job.title)}*\n'
@@ -70,7 +70,7 @@ def scrape_site(site_name: str) -> None:
                 f'Published: {escape_markdown(age)} ago\n'
                 f'{escape_markdown(job.url)}'
             )
-            tg.send_report(message=message)
+            tg.send_message(message=message)
             time.sleep(1)
 
         logger.info(f'Scraping {site.name} finished: {len(new_jobs)} new jobs')
@@ -78,11 +78,11 @@ def scrape_site(site_name: str) -> None:
     except (ScrapingError, ParsingError) as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
         logger.error(f'[{site.name}] {e}')
-        tg.send_report(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e))}')
+        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e))}')
         raise
 
     except Exception as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
         logger.error(f'[{site.name}] Unexpected error: {e}')
-        tg.send_report(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e))}')
+        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e))}')
         raise
