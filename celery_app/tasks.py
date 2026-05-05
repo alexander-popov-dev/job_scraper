@@ -32,7 +32,7 @@ def run_scraping() -> None:
             logger.info(f'Dispatched scrape_site for {site.name}')
         except Exception as e:
             logger.error(f'Failed to dispatch scrape_site for {site.name}: {e}')
-            tg.send_message(message=escape_markdown(str(e)))
+            tg.send_message(message=escape_markdown(str(e)[:500]))
 
 
 @shared_task
@@ -66,7 +66,7 @@ def scrape_site(site_name: str) -> None:
                 f'*{escape_markdown(site.name)}*\n\n'
                 f'*{escape_markdown(job.title)}*\n'
                 f'{escape_markdown(job.company)} \\| {escape_markdown(job.city)} \\| {escape_markdown(job.salary)}\n\n'
-                f'{escape_markdown(job.description[:3000])}\n\n'
+                f'{escape_markdown(job.description[:1500])}\n\n'
                 f'Published: {escape_markdown(age)} ago\n'
                 f'{escape_markdown(job.url)}'
             )
@@ -78,11 +78,11 @@ def scrape_site(site_name: str) -> None:
     except (ScrapingError, ParsingError) as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
         logger.error(f'[{site.name}] {e}')
-        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e))}')
+        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e)[:500])}')
         raise
 
     except Exception as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
         logger.error(f'[{site.name}] Unexpected error: {e}')
-        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e))}')
+        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e)[:500])}')
         raise
