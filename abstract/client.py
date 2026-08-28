@@ -1,10 +1,16 @@
+import logging
 from abc import ABC, abstractmethod
 
 from core.dto import ResponseDTO
 
+logger = logging.getLogger(__name__)
+
 
 class BaseClient(ABC):
     """Abstract client for fetching web content, independent of the underlying mechanism."""
+
+    def __init__(self) -> None:
+        logger.info(f"HTTP Client: {self.__class__.__name__}")
 
     def __enter__(self) -> 'BaseClient':
         """Support usage as a context manager."""
