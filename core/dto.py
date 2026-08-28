@@ -16,7 +16,12 @@ class ResponseDTO:
     def raise_for_status(self) -> None:
         """Raise an HTTPError if the status code indicates a client or server error."""
         if self.status_code >= 400:
-            raise HTTPError(f'HTTP {self.status_code}: {self.reason}')
+            retryable = not (400 <= self.status_code < 500 and self.status_code != 429)
+            raise HTTPError(
+                f'HTTP {self.status_code}: {self.reason}',
+                status_code=self.status_code,
+                retryable=retryable,
+            )
 
 
 @dataclass
