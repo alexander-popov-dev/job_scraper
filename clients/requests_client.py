@@ -12,6 +12,7 @@ class RequestsClient(BaseClient):
     def __init__(self, proxy: str | None = None):
         """Initialize with an optional proxy applied to all requests."""
         self._proxies = {'http': proxy, 'https': proxy} if proxy else None
+        super().__init__()
 
     def fetch(self, url: str, method: str = 'GET', **kwargs) -> ResponseDTO:
         """Execute an HTTP request using `requests.request` and return a ResponseDTO."""
