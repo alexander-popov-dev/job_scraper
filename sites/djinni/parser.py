@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlsplit, urlunsplit
 
 from dateutil.parser import parse
 from parsel import Selector
@@ -22,7 +23,7 @@ class Parser(BaseParser):
     COMPANY_XPATH = './/span[@class="small text-gray-800 opacity-75 font-weight-500"]/text()'
     CITY_XPATH = './/span[@class="location-text"]//text()'
     SALARY_XPATH = './/span[@class="text-success text-nowrap"]//text()'
-    PUBLISHED_XPATH = './/div[@class="d-flex align-items-center gap-1 fs-5"]/span[@data-toggle="tooltip"]/@title'
+    PUBLISHED_XPATH = './/div[@class="d-flex align-items-center gap-1 fs-5"]/span[@data-bs-toggle="tooltip"]/@title'
 
     def parse(self, content: str) -> list[JobDTO]:
         """Extract job listings from the Djinni HTML page."""
@@ -32,7 +33,7 @@ class Parser(BaseParser):
         for item in tree.xpath(self.JOB_LIST_XPATH):
             try:
                 jobs.append(JobDTO(
-                    url=f'{self.BASE_URL}{item.xpath(self.URL_XPATH).get().strip()}',
+                    url=self._clean_url(f'{self.BASE_URL}{item.xpath(self.URL_XPATH).get().strip()}'),
                     title=item.xpath(self.TITLE_XPATH).get().strip(),
                     description=self._parse_description(item),
                     salary=self._get_or_default(item.xpath(self.SALARY_XPATH).get()),
@@ -55,6 +56,12 @@ class Parser(BaseParser):
             if text:
                 parts.append(f'• {text}' if el.root.tag == 'li' else text)
         return '\n'.join(parts).strip()
+
+    @staticmethod
+    def _clean_url(url: str) -> str:
+        """Strip query string and fragment from a URL."""
+        parts = urlsplit(url)
+        return urlunsplit(parts._replace(query='', fragment=''))
 
     @staticmethod
     def _get_or_default(value: str | None, default: str = '-') -> str:
