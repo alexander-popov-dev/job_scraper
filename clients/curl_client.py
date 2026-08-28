@@ -1,4 +1,5 @@
 import logging
+from unittest import case
 
 import curl_cffi
 
@@ -22,9 +23,12 @@ class CurlClient(BaseClient):
         """Execute an HTTP request and return a ResponseDTO."""
         kwargs.setdefault('timeout', DEFAULT_TIMEOUT)
 
-        if method == 'GET':
-            r = curl_cffi.get(url, impersonate="chrome")
-        else:
-            raise ValueError('Unsupported HTTP method')
+        match method:
+            case 'GET':
+                r = curl_cffi.get(url, impersonate="chrome", proxy=self._proxy, **kwargs)
+            case 'POST':
+                r = curl_cffi.post(url, impersonate="chrome", proxy=self._proxy, **kwargs)
+            case _:
+                raise ValueError('Unsupported HTTP method')
 
         return ResponseDTO(text=r.text, status_code=r.status_code, reason=r.reason or '')
