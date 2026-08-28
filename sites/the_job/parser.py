@@ -29,7 +29,7 @@ class Parser(BaseParser):
                     salary=f"{item.get('salaryMin', 0) } - {item.get('salaryMax', 0)} {item.get('salaryCurrency', '')}",
                     company=item['companyName'],
                     city=item.get('countryName', ''),
-                    published_at=kyiv_to_utc(parse(item['createdAt'])),
+                    published_at=kyiv_to_utc(parse(item['updatedAt'])),
                 ))
             except Exception as e:
                 raise ParsingError(f'[TheJob] Parsing error: {e}')
