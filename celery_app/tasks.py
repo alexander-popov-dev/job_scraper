@@ -35,8 +35,12 @@ def run_scraping() -> None:
             tg.send_message(message=escape_markdown(str(e)[:500]))
 
 
-@shared_task
-def scrape_site(site_name: str) -> None:
+SCRAPING_MAX_RETRIES = 20
+SCRAPING_RETRY_DELAY = 15  # seconds; doubles each attempt (15, 30, 60, 120, 240)
+
+
+@shared_task(bind=True, max_retries=SCRAPING_MAX_RETRIES)
+def scrape_site(self, site_name: str) -> None:
     """Run the full scraping pipeline for a single site with session tracking."""
     sites_repo = SitesRepository()
     sessions_repo = ScrapingSessionsRepository()
@@ -50,7 +54,7 @@ def scrape_site(site_name: str) -> None:
     config = SCRAPER_REGISTRY[site.name]
     session_id = sessions_repo.create(site_id=site.id)
     try:
-        logger.info(f'Scraping {site.name} started')
+        logger.info(f'Scraping {site.name} started, proxy: {site.proxy}')
 
         controller = ScrapingController(config=config, proxy=site.proxy)
         raw = controller.fetch()
@@ -75,7 +79,23 @@ def scrape_site(site_name: str) -> None:
 
         logger.info(f'Scraping {site.name} finished: {len(new_jobs)} new jobs')
 
-    except (ScrapingError, ParsingError) as e:
+    except ScrapingError as e:
+        sessions_repo.fail(session_id=session_id, error=str(e))
+        logger.error(f'[{site.name}] {e}')
+
+        retryable = getattr(e, 'retryable', True)
+        if retryable and self.request.retries < self.max_retries:
+            delay = 1
+            logger.warning(
+                f'[{site.name}] Retrying in {delay}s '
+                f'(attempt {self.request.retries + 1}/{self.max_retries})'
+            )
+            raise self.retry(countdown=delay, exc=e)
+
+        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e)[:500])}')
+        raise
+
+    except ParsingError as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
         logger.error(f'[{site.name}] {e}')
         tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e)[:500])}')
