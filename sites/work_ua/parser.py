@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timezone
 
 from dateutil.parser import parse
 from parsel import Selector
@@ -20,7 +19,7 @@ class Parser(BaseParser):
     URL_XPATH = './/h2//@href'
     TITLE_XPATH = './/h2/a/text()'
     DESCRIPTION_XPATH = './p/text()'
-    COMPANY_XPATH = './/div[@class="mt-xs"]//span[@class="strong-600"]/text()'
+    COMPANY_XPATH = './/div[@class="mt-sm"]//span[@class="strong-600"]/text()'
     CITY_XPATH = './/div[@class="mt-xs"]/span[2]/text()'
     SALARY_XPATH = './div/span[@class="strong-600"]/text()'
     PUBLISHED_XPATH = './/time/@datetime'
