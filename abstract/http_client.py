@@ -6,13 +6,13 @@ from core.dto import ResponseDTO
 logger = logging.getLogger(__name__)
 
 
-class BaseClient(ABC):
+class BaseHTTPClient(ABC):
     """Abstract client for fetching web content, independent of the underlying mechanism."""
 
     def __init__(self) -> None:
         logger.info(f"HTTP Client: {self.__class__.__name__}")
 
-    def __enter__(self) -> 'BaseClient':
+    def __enter__(self) -> 'BaseHTTPClient':
         """Support usage as a context manager."""
         return self
 
