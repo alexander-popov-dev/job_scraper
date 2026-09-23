@@ -1,9 +1,9 @@
 import logging
 from abc import ABC, abstractmethod
 
-from abstract.client import BaseClient
+from abstract.http_client import BaseHTTPClient
 from clients.requests_client import RequestsClient
-from core.dto import ResponseDTO
+from core.dto import ResponseDTO, SiteDTO
 from core.exceptions import HTTPError, ScrapingError
 
 logger = logging.getLogger(__name__)
@@ -18,9 +18,13 @@ class BaseScraper(ABC):
 
     SITE_NAME: str = ''
 
-    def __init__(self, proxy: str | None = None, client: BaseClient | None = None):
+    def __init__(
+            self,
+            site_config: SiteDTO,
+            client: BaseHTTPClient | None = None):
         """Use the injected client, or default to RequestsClient with the given proxy."""
-        self._client = client or RequestsClient(proxy=proxy)
+        self._site_config = site_config
+        self._client = client or RequestsClient(proxy=site_config.proxy)
 
     def fetch(self) -> str:
         """Fetch page content once.
