@@ -8,7 +8,7 @@ import settings
 from abstract.repository import BaseJobsRepository, BaseSitesRepository, BaseSessionsRepository, BaseRawRepository
 from core.dto import SiteDTO, JobDTO
 from core.enums import SiteName, SessionStatus
-from database.models import Base, Jobs, Sites, ScrapingSession, RawResponse
+from database.models import Jobs, Sites, ScrapingSession, RawResponse
 
 
 class BaseRepository:
