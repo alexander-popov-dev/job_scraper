@@ -1,12 +1,12 @@
+from abstract.http_client import BaseHTTPClient
 from abstract.scraper import BaseScraper
-from core.dto import ResponseDTO
+from clients.curl_client import CurlClient
+from core.dto import ResponseDTO, SiteDTO
 
 
 class Scraper(BaseScraper):
     """Fetches Python job listings from The Job."""
 
-    SITE_NAME = "TheJob"
-    URL = "https://thejob.tech/api/job?query=python&jobLocation=Remote&&page=1"
     HEADERS = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -15,7 +15,10 @@ class Scraper(BaseScraper):
         )
     }
 
-    def _request(self) -> ResponseDTO:
-        """Send a GET request to the The Job job listings page."""
+    def __init__(self, site_config: SiteDTO, client: BaseHTTPClient | None = None):
+        super().__init__(site_config, client=client or CurlClient())
 
-        return self._client.fetch(self.URL, headers=self.HEADERS)
+    def _request(self) -> ResponseDTO:
+        """Send a GET request to The Job job listings page."""
+
+        return self._client.fetch(self._site_config.url, headers=self.HEADERS)
