@@ -12,6 +12,7 @@ class SiteName(StrEnum):
     ROBOTA_UA = 'RobotaUA'
     WORK_UA = 'WorkUA'
     THE_JOB = 'TheJob'
+    LINKED_IN = 'LinkedIn'
 
 
 class SessionStatus(StrEnum):
