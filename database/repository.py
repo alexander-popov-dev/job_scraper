@@ -122,7 +122,13 @@ class SitesRepository(BaseRepository, BaseSitesRepository):
             row = db.query(Sites).filter(Sites.name == name).first()
             if row is None:
                 return None
-            return SiteDTO(id=row.id, name=SiteName(row.name), url=row.url, proxy=row.proxy)
+            return SiteDTO(
+                id=row.id,
+                name=SiteName(row.name),
+                url=row.url,
+                proxy=row.proxy,
+                cookie=row.cookie
+            )
 
 
 class ScrapingSessionsRepository(BaseRepository, BaseSessionsRepository):
