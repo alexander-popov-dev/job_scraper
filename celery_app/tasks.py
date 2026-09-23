@@ -46,7 +46,7 @@ def scrape_site(self, site_name: str) -> None:
     sessions_repo = ScrapingSessionsRepository()
     raw_repo = RawResponsesRepository()
 
-    site = sites_repo.get_by_name(site_name)
+    site = sites_repo.get_by_name(name=site_name)
     if site is None:
         logger.error(f'Site not found in DB: {site_name}')
         return
