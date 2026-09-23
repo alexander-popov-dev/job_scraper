@@ -56,7 +56,7 @@ def scrape_site(self, site_name: str) -> None:
     try:
         logger.info(f'Scraping {site.name} started, proxy: {site.proxy}')
 
-        controller = ScrapingController(config=config, proxy=site.proxy)
+        controller = ScrapingController(scraper_config=config, proxy=site.proxy, cookie=site.cookie)
         raw = controller.fetch()
         raw_repo.save(session_id=session_id, content=raw)
 
