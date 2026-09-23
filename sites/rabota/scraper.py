@@ -1,14 +1,12 @@
-from abstract.client import BaseClient
+from abstract.http_client import BaseHTTPClient
 from abstract.scraper import BaseScraper
 from clients.curl_client import CurlClient
-from core.dto import ResponseDTO
+from core.dto import ResponseDTO, SiteDTO
 
 
 class Scraper(BaseScraper):
     """Fetches Python job listings from Robota.ua via GraphQL."""
 
-    SITE_NAME = 'RobotaUA'
-    URL = 'https://dracula.robota.ua/?q=getPublishedVacanciesList'
     GRAPHQL_QUERY = """
         query getPublishedVacanciesList($filter: PublishedVacanciesFilterInput!, $pagination: PublishedVacanciesPaginationInput!, $sort: PublishedVacanciesSortType!, $isBrowser: Boolean!) {
           publishedVacancies(filter: $filter, pagination: $pagination, sort: $sort) {
@@ -168,9 +166,9 @@ class Scraper(BaseScraper):
                       'Chrome/148.0.0.0 Safari/537.36'
     }
 
-    def __init__(self, proxy: str | None = None, client: BaseClient | None = None):
-        super().__init__(proxy, client=client or CurlClient())
+    def __init__(self, site_config: SiteDTO, client: BaseHTTPClient | None = None):
+        super().__init__(site_config, client=client or CurlClient())
 
     def _request(self) -> ResponseDTO:
         """Send a GraphQL POST request to the Robota.ua API."""
-        return self._client.fetch(self.URL, method='POST', json=self.PAYLOAD, headers=self.HEADERS)
+        return self._client.fetch(self._site_config.url, method='POST', json=self.PAYLOAD, headers=self.HEADERS)
