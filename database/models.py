@@ -13,6 +13,7 @@ class Sites(Base):
     name = Column(String, nullable=False, unique=True)
     url = Column(Text, nullable=False)
     proxy = Column(Text, nullable=True)
+    cookie = Column (Text, nullable=True)
     enabled = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True))
     updated_at = Column(DateTime(timezone=True))
