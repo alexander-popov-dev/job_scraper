@@ -32,6 +32,7 @@ class SiteDTO:
     name: SiteName
     url: str
     proxy: str | None
+    cookie: str | None
 
 
 @dataclass
