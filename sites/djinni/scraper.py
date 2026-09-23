@@ -22,4 +22,4 @@ class Scraper(BaseScraper):
 
     def _request(self) -> ResponseDTO:
         """Send a GET request to the Djinni job listings page."""
-        return self._client.fetch(self.URL)
+        return self._client.fetch(url=self._site_config.url)
