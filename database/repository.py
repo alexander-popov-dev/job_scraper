@@ -112,7 +112,13 @@ class SitesRepository(BaseRepository, BaseSitesRepository):
         with self._get_session() as db:
             rows = db.query(Sites).filter(Sites.enabled == True).all()
             return [
-                SiteDTO(id=row.id, name=SiteName(row.name), url=row.url, proxy=row.proxy)
+                SiteDTO(
+                    id=row.id,
+                    name=SiteName(row.name),
+                    url=row.url,
+                    proxy=row.proxy,
+                    cookie=row.cookie
+                )
                 for row in rows
             ]
 
