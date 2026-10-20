@@ -16,7 +16,7 @@ class Scraper(BaseScraper):
     }
 
     def __init__(self, site_config: SiteDTO, client: BaseHTTPClient | None = None):
-        super().__init__(site_config, client=client or CurlClient())
+        super().__init__(site_config, client=client or CurlClient(proxy=site_config.proxy))
 
     def _request(self) -> ResponseDTO:
         """Send a GET request to The Job job listings page."""
