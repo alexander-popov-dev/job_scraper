@@ -3,7 +3,7 @@
 from abstract.dto import ScraperConfigDTO
 from core.enums import SiteName
 from database.repository import JobsRepository
-from sites import djinni, dou, rabota, work_ua, the_job
+from sites import djinni, dou, rabota, work_ua, the_job, linkedin
 
 SCRAPER_REGISTRY: dict[SiteName, ScraperConfigDTO] = {
     SiteName.DOU: ScraperConfigDTO(
@@ -34,6 +34,12 @@ SCRAPER_REGISTRY: dict[SiteName, ScraperConfigDTO] = {
         site=SiteName.THE_JOB,
         scraper=the_job.Scraper,
         parser=the_job.Parser,
+        repo=JobsRepository,
+    ),
+    SiteName.LINKED_IN: ScraperConfigDTO(
+        site=SiteName.LINKED_IN,
+        scraper=linkedin.Scraper,
+        parser=linkedin.Parser,
         repo=JobsRepository,
     ),
 }
