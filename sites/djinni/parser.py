@@ -23,7 +23,7 @@ class Parser(BaseParser):
     COMPANY_XPATH = './/span[@class="small text-gray-800 opacity-75 font-weight-500"]/text()'
     CITY_XPATH = './/span[@class="location-text"]//text()'
     SALARY_XPATH = './/span[@class="text-success text-nowrap"]//text()'
-    PUBLISHED_XPATH = './/div[@class="d-flex align-items-center gap-1 fs-5"]/span[@data-bs-toggle="tooltip"]/@title'
+    PUBLISHED_XPATH = './/div[@class="d-flex flex-wrap align-items-center column-gap-1 fs-5"]/span[@data-bs-toggle="tooltip"]/@title'
 
     def parse(self, content: str) -> list[JobDTO]:
         """Extract job listings from the Djinni HTML page."""
