@@ -46,17 +46,17 @@ def scrape_site(self, site_name: str) -> None:
     sessions_repo = ScrapingSessionsRepository()
     raw_repo = RawResponsesRepository()
 
-    site = sites_repo.get_by_name(name=site_name)
-    if site is None:
+    site_config = sites_repo.get_by_name(name=site_name)
+    if site_config is None:
         logger.error(f'Site not found in DB: {site_name}')
         return
 
-    config = SCRAPER_REGISTRY[site.name]
-    session_id = sessions_repo.create(site_id=site.id)
+    scraper_config = SCRAPER_REGISTRY[site_config.name]
+    session_id = sessions_repo.create(site_id=site_config.id)
     try:
-        logger.info(f'Scraping {site.name} started, proxy: {site.proxy}')
+        logger.info(f'Scraping {site_config.name} started, proxy: {site_config.proxy}')
 
-        controller = ScrapingController(scraper_config=config, proxy=site.proxy, cookie=site.cookie)
+        controller = ScrapingController(scraper_config=scraper_config, site_config=site_config)
         raw = controller.fetch()
         raw_repo.save(session_id=session_id, content=raw)
 
@@ -67,7 +67,7 @@ def scrape_site(self, site_name: str) -> None:
         for job in new_jobs:
             age = str(datetime.now(tz=timezone.utc) - job.published_at) if job.published_at else None
             message = (
-                f'*{escape_markdown(site.name)}*\n\n'
+                f'*{escape_markdown(site_config.name)}*\n\n'
                 f'*{escape_markdown(job.title)}*\n'
                 f'{escape_markdown(job.company)} \\| {escape_markdown(job.city)} \\| {escape_markdown(job.salary)}\n\n'
                 f'{escape_markdown(job.description[:1500])}\n\n'
@@ -77,32 +77,32 @@ def scrape_site(self, site_name: str) -> None:
             tg.send_message(message=message)
             time.sleep(1)
 
-        logger.info(f'Scraping {site.name} finished: {len(new_jobs)} new jobs')
+        logger.info(f'Scraping {site_config.name} finished: {len(new_jobs)} new jobs')
 
     except ScrapingError as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
-        logger.error(f'[{site.name}] {e}')
+        logger.error(f'[{site_config.name}] {e}')
 
         retryable = getattr(e, 'retryable', True)
         if retryable and self.request.retries < self.max_retries:
             delay = 1
             logger.warning(
-                f'[{site.name}] Retrying in {delay}s '
+                f'[{site_config.name}] Retrying in {delay}s '
                 f'(attempt {self.request.retries + 1}/{self.max_retries})'
             )
             raise self.retry(countdown=delay, exc=e)
 
-        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e)[:500])}')
+        tg.send_message(message=f'\\[{escape_markdown(site_config.name)}\\] {escape_markdown(str(e)[:500])}')
         raise
 
     except ParsingError as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
-        logger.error(f'[{site.name}] {e}')
-        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e)[:500])}')
+        logger.error(f'[{site_config.name}] {e}')
+        tg.send_message(message=f'\\[{escape_markdown(site_config.name)}\\] {escape_markdown(str(e)[:500])}')
         raise
 
     except Exception as e:
         sessions_repo.fail(session_id=session_id, error=str(e))
-        logger.error(f'[{site.name}] Unexpected error: {e}')
-        tg.send_message(message=f'\\[{escape_markdown(site.name)}\\] {escape_markdown(str(e)[:500])}')
+        logger.error(f'[{site_config.name}] Unexpected error: {e}')
+        tg.send_message(message=f'\\[{escape_markdown(site_config.name)}\\] {escape_markdown(str(e)[:500])}')
         raise
