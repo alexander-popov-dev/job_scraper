@@ -1,15 +1,19 @@
-from abstract.dto import ScraperConfigDTO
-from core.dto import JobDTO
+from abstract.dto import ScraperConfigDTO, ProviderConfigDTO
+from core.dto import JobDTO, SiteDTO
 
 
 class ScrapingController:
     """Orchestrates the fetch → parse → save pipeline for a single site."""
 
-    def __init__(self, config: ScraperConfigDTO, proxy: str | None = None):
+    def __init__(
+            self,
+            scraper_config: ScraperConfigDTO,
+            site_config: SiteDTO,
+    ) -> None:
         """Initialize scraper, parser, and repository from the given config."""
-        self._scraper = config.scraper(proxy=proxy)
-        self._parser = config.parser()
-        self._repo = config.repo()
+        self._scraper = scraper_config.scraper(site_config=site_config)
+        self._parser = scraper_config.parser()
+        self._repo = scraper_config.repo()
 
     def fetch(self) -> str:
         """Fetch raw HTML or JSON content from the target site."""
