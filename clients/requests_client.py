@@ -1,12 +1,12 @@
 import requests
 
-from abstract.client import BaseClient
+from abstract.http_client import BaseHTTPClient
 from core.dto import ResponseDTO
 
 DEFAULT_TIMEOUT = 30
 
 
-class RequestsClient(BaseClient):
+class RequestsClient(BaseHTTPClient):
     """HTTP client implementation backed by the `requests` library."""
 
     def __init__(self, proxy: str | None = None):
