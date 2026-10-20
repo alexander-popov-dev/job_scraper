@@ -14,3 +14,15 @@ class ScraperConfigDTO:
     scraper: type[BaseScraper]
     parser: type[BaseParser]
     repo: type[BaseJobsRepository]
+
+
+@dataclass
+class ProviderConfigDTO:
+    """Binds a site identifier with its scraper, parser, and repository implementations."""
+
+    provider: str
+    api_key: str
+    login: str | None
+    password: str | None
+    folder_id: str | None
+    profile_id: str
