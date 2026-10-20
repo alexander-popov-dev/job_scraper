@@ -3,7 +3,7 @@ from unittest import case
 
 import curl_cffi
 
-from abstract.client import BaseClient
+from abstract.http_client import BaseHTTPClient
 from core.dto import ResponseDTO
 
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT = 30
 
-class CurlClient(BaseClient):
+class CurlClient(BaseHTTPClient):
     """HTTP client implementation backed by the `curl_cffi` library."""
 
     def __init__(self, proxy: str | None = None):
@@ -25,9 +25,9 @@ class CurlClient(BaseClient):
 
         match method:
             case 'GET':
-                r = curl_cffi.get(url, impersonate="chrome", proxy=self._proxy, **kwargs)
+                r = curl_cffi.get(url, impersonate="chrome150", proxy=self._proxy, **kwargs)
             case 'POST':
-                r = curl_cffi.post(url, impersonate="chrome", proxy=self._proxy, **kwargs)
+                r = curl_cffi.post(url, impersonate="chrome150", proxy=self._proxy, **kwargs)
             case _:
                 raise ValueError('Unsupported HTTP method')
 
